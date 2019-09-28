@@ -21,6 +21,8 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-jdbc')
     compile('org.springframework.boot:spring-boot-starter-thymeleaf:2.1.8.RELEASE')
     compile('mysql:mysql-connector-java')
+    compile("org.springframework.boot:spring-boot-devtools")
+    testCompile("junit:junit")
     compileOnly 'org.projectlombok:lombok:1.18.10'
     annotationProcessor 'org.projectlombok:lombok:1.18.10'
 }
