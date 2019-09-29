@@ -22,7 +22,7 @@ public class MainControllerTests {
     @Test
     public void index() throws Exception {
 
-        mvc.perform(get(""))
+        mvc.perform(get("/?year=2019&month=9"))
                 .andExpect(status().isOk());
 
     }
