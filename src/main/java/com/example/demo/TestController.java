@@ -15,8 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static com.sun.activation.registries.LogSupport.log;
-
 @CrossOrigin
 @RestController
 public class TestController {
@@ -26,13 +24,8 @@ public class TestController {
 
     @PostMapping("/tests")
     public ResponseEntity create(
-            @RequestBody Test resource,
-            HttpServletRequest request
+            @RequestBody Test resource
     ) throws URISyntaxException {
-
-        String some = request.getParameter("name");
-
-        System.out.println(some);
 
         Test test = testRepository.save(resource);
 
