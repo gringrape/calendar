@@ -97,13 +97,13 @@ export default {
       console.log("시작시간" + startDate)
       console.log("끝시간" + endDate)
 
-      axios.get('http://localhost:5000/itineraries?startDate=' + startDate + '&endDate=' + endDate)
+      axios.get('/itineraries?startDate=' + startDate + '&endDate=' + endDate)
       .then(response => this.itineraries = response.data)
     },
     send: function(id, className) {
       this.markingClassName = className;
 
-      axios.get('http://localhost:5000/itineraries/' + id)
+      axios.get('/itineraries/' + id)
       .then(response => this.itinerary = response.data)
     },
     formatter: function(date) {

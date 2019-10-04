@@ -202,7 +202,7 @@ export default {
                       endMoment.format('HH') +
                       endMoment.format('mm')
 
-      axios.get('http://localhost:5000/itineraries?startDate=' + startDate + '&endDate=' + endDate)
+      axios.get('/itineraries?startDate=' + startDate + '&endDate=' + endDate)
       .then(response => this.itineraries = response.data)
     },
     drawItineraries: function() {
@@ -293,7 +293,7 @@ export default {
       this.pickedStartDate = this.yearCal + month + day
     },
     getItinerary: function() {
-       axios.get('http://localhost:5000/itineraries/' + this.itineraryId)
+       axios.get('/itineraries/' + this.itineraryId)
       .then(response => this.itinerary = response.data)
     },
     updateComponet: function() {
