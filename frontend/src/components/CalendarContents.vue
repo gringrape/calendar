@@ -1,5 +1,7 @@
 <template>
   <div class="tab-content">
+    <RegisterForm :checker="switcher" @registered="$emit('registered')">
+    </RegisterForm>
     <div class="tab-pane active show" id="month" role="tabpanel" aria-labelledby="tab-month">
       <div class="monthly-calendar">
         <div class="week-day">
@@ -13,17 +15,36 @@
         </div>
       </div>
     </div>
-    <button @click="getList()">
+   <!-- <button @click="getList()">
       일정 불러오기 연습
     </button>
     <button @click="drawItineraries()">
       일정 그리기 연습
     </button>
-    <h1>{{ test }}</h1>
-    <!-- <h5 v-for="ele in itineraries">{{ ele }}</h5> -->
-    <h5 v-for="el in sep" >{{ el }}</h5>
-    <RegisterForm :checker="switcher">
-    </RegisterForm>
+    <h1>{{ itineraries }}</h1>
+    <h1>{{ sep }}</h1>
+    <h5 v-for="ele in itineraries">{{ ele }}</h5>
+    <h5 v-for="el in sep" >{{ el }}</h5> -->
+    
+    <popover name="pop">
+      <div class="content-line">
+        <div v-bind:class="markingClassName">
+        </div>
+        <div class="title">
+          <h5 id="title">{{ itinerary["title"] }}</h5>
+          <h5 class="reservation">
+            {{ formatter(itinerary["startDate"]) }} ~ <br>
+            {{ formatter(itinerary["endDate"]) }}
+          </h5>
+        </div>
+      </div>
+      <div class="content-line">
+        <i class="material-icons">notes</i>
+      </div>
+      <div class="title">
+        <h5 class="description" id="description">{{ itinerary["description"] }}</h5>
+      </div>
+    </popover>
   </div>    
 </template>
 
@@ -39,7 +60,8 @@ export default {
   name: 'CalendarContents',
   props: {
     yearCal: String,
-    monthCal: String
+    monthCal: String,
+    counter: Number
   },
   components: {
     RegisterForm
@@ -50,8 +72,13 @@ export default {
       dayName: ['일', '월', '화', '수', '목', '금', '토'],
       weeks: [],
       itineraries: [],
+      itinerary: {},
       sep: [],
-      test: ''
+      test: '',
+      msg: '',
+      // for inserting
+      itineraryId: '',
+      markingClassName: ''
     }
   },
   methods: {
@@ -132,7 +159,7 @@ export default {
           }
         }
 
-        var diff = endDate.diff(startDate, 'days') + 1;
+        var diff = endDate.endOf('day').diff(startDate.endOf('day'), 'days') + 1;
         var sort = separatedItinerary["sort"]
 
         if(sort == 1) {
@@ -147,7 +174,19 @@ export default {
           propsData: {
             id: "" + separatedItinerary["id"],
             title: separatedItinerary["title"],
-            period: diff
+            period: diff,
+            sort: sort
+          }
+        })
+
+        instance.$on('clicked', args => {
+          this.itineraryId = args.id
+          if(args.sort == 1) {
+            this.markingClassName = 'event-marking'
+          } else if(args.sort == 2) {
+            this.markingClassName = 'event-consecutive-marking'
+          } else if(args.sort == 3) {
+            this.markingClassName = 'event-repetitive-marking'
           }
         })
 
@@ -246,16 +285,42 @@ export default {
       } else {
         this.switcher = true
       }
+    },
+    getItinerary: function() {
+       axios.get('http://localhost:5000/itineraries/' + this.itineraryId)
+      .then(response => this.itinerary = response.data)
+    },
+    updateComponet: function() {
+      this.itineraries = []
+      this.sep = []
+      this.getCalendar();
+      this.getList();
+    },
+    formatter: function(date) {
+      return moment(date).format('YYYY') + " 년 " +
+            moment(date).format("MM") + " 월 " +
+            moment(date).format("DD") + " 일 " +
+            moment(date).format('LT')
     }
   },
   watch: {
     monthCal: function() {
-      this.getCalendar();
+      this.updateComponet()
+    },
+    itineraries: function() {
+      this.drawItineraries()
+    },
+    itineraryId: function() {
+      this.getItinerary()
     }
+  },
+  mounted() {
+    this.updateComponet();
   }
 }
 </script>
 
 <style>
+@import "../assets/css/popover.css";
 </style>
 

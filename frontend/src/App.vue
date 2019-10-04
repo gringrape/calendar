@@ -5,12 +5,12 @@
           <div class="ico-arrow">
               <a href="#" data-toggle="tooltip" data-placement="top" title="이전">
                   <i class="material-icons" @click="getPrevMonth()">
-                      이전
+                    arrow_left
                   </i>
               </a>
               <a href="#" data-toggle="tooltip" data-placement="top" title="다음">
                   <i class="material-icons" @click="getNextMonth()">
-                      다음
+                    arrow_right
                   </i>
               </a>
           </div>
@@ -27,11 +27,12 @@
               </li>
           </ul>
       </div>
-      <router-view :yearCal="year" :monthCal="month"></router-view>
+      <router-view :yearCal="year" :monthCal="month" :counter="componentKey" :key="componentKey" @registered="forceUpdateRegistered()"></router-view>
   </div>
 </template>
 
 <script>
+import Vue from 'vue'
 import moment from 'moment'
 
 export default {
@@ -39,7 +40,8 @@ export default {
   data() {
     return {
       year: '',
-      month: ''
+      month: '',
+      componentKey: 0
     }
   },
   methods: {
@@ -52,14 +54,20 @@ export default {
       var prev = curr.subtract(1, 'months')
       this.year = prev.format('YYYY')
       this.month = prev.format('M')
+      this.forceUpdate();
     },
     getNextMonth: function() {
       var curr = moment(this.year + this.month, 'YYYYM')
       var next = curr.add(1, 'months')
       this.year = next.format('YYYY')
       this.month = next.format('M')
+      this.forceUpdate();
+    },
+    forceUpdate: function() {
+      this.componentKey += 1;
+      console.log("업데이트~!!!")
     }
-  }, 
+  },
   mounted() {
     this.initialize()
   }
@@ -67,5 +75,7 @@ export default {
 </script>
 
 <style>
-@import "assets/css/basic.css"
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons"); 
+@import "assets/css/basic.css";
+@import 'vue2-timepicker/dist/VueTimepicker.css'
 </style>

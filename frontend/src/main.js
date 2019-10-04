@@ -4,15 +4,17 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import VModal from 'vue-js-modal'
-import Popover  from 'vue-js-popover'
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
- 
-Vue.use(VueAxios, axios)
+import Popover  from 'vue-js-popover'
+import VueTimepicker from 'vue2-timepicker'
+
 Vue.use(Popover)
+Vue.use(VueAxios, axios)
 Vue.use(VModal, { dynamic: true, injectModalsContainer: true })
+Vue.use(VueTimepicker)
 
 Vue.config.productionTip = false
 

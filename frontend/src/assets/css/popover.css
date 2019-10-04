@@ -1,0 +1,37 @@
+div[data-popover="pop"] {
+  min-width: 240px;
+  padding: 16px;
+  color: #263747; }
+  div[data-popover="pop"] .content-line {
+    display: flex;
+    align-items: flex-start; }
+    div[data-popover="pop"] .content-line .event-marking, div[data-popover="pop"] .content-line .event-consecutive-marking, div[data-popover="pop"] .content-line .event-repeated-marking {
+      width: 24px;
+      height: 24px; }
+    div[data-popover="pop"] .content-line .event-consecutive-marking {
+      border-radius: 4px;
+      background-color: #0078FF; }
+    div[data-popover="pop"] .content-line .event-marking {
+      border-radius: 4px;
+      background-color: #D7E2EB; }
+    div[data-popover="pop"] .content-line .event-repeated-marking {
+      border-radius: 4px;
+      background-color: #673AB7; }
+    div[data-popover="pop"] .content-line .title {
+      margin-left: 12px; }
+      div[data-popover="pop"] .content-line .title .reservation {
+        font-size: 12px;
+        display: block; }
+    div[data-popover="pop"] .content-line .material-icons {
+      color: #263747; }
+    div[data-popover="pop"] .content-line:nth-child(2) {
+      margin-top: 16px; }
+    div[data-popover="pop"] #description {
+        margin-top: 2px;
+        font-size: 12px;
+        display: block; }
+    div[data-popover="pop"] #title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #202020;
+    }

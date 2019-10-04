@@ -3,13 +3,14 @@
   <transition name="modal">
   <div class="modal-mask">
     <div class="modal-wrapper">
+
   <div id="registerSchedule" tabindex="-1" role="dialog" aria-labelledby="registerScheduleLabel"
      aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="registerScheduleLabel">일정 만들기</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="show = false">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @click="close()">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -29,9 +30,9 @@
                                 <label class="col-form-label">일정 시작 날짜</label>
                                 <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
                                     <input type="text" class="form-control datetimepicker-input"
-                                           data-target="#datetimepicker1" v-model="startDay"/>
+                                           data-target="#datetimepicker1" v-model="startDay" :disabled="true"/>
                                     <div class="input-group-append" data-target="#datetimepicker1"
-                                         data-toggle="datetimepicker">
+                                         data-toggle="datetimepicker" v-popover:picker.top @click="setStart()">
                                         <div class="input-group-text"><i class="material-icons">
                                             calendar_today
                                         </i></div>
@@ -44,9 +45,9 @@
                                 <label class="col-form-label">일정 시작 시간</label>
                                 <div class="input-group date" id="datetimepicker2" data-target-input="nearest">
                                     <input type="text" class="form-control datetimepicker-input"
-                                           data-target="#datetimepicker2" v-model="startTime"/>
+                                           data-target="#datetimepicker2" v-model="startTime" :disabled="true"/>
                                     <div class="input-group-append" data-target="#datetimepicker2"
-                                         data-toggle="datetimepicker">
+                                         data-toggle="datetimepicker" v-popover:timePicker.left @click="setTimeStartTarget()">
                                         <div class="input-group-text"><i class="material-icons">
                                             access_time
                                         </i></div>
@@ -61,9 +62,9 @@
                                 <label class="col-form-label">일정 종료 날짜</label>
                                 <div class="input-group date" id="datetimepicker3" data-target-input="nearest">
                                     <input type="text" class="form-control datetimepicker-input"
-                                           data-target="#datetimepicker3" v-model="endDay"/>
+                                           data-target="#datetimepicker3" v-model="endDay" :disabled="true"/>
                                     <div class="input-group-append" data-target="#datetimepicker3"
-                                         data-toggle="datetimepicker">
+                                         data-toggle="datetimepicker" v-popover:picker.top @click="setEnd()">
                                         <div class="input-group-text"><i class="material-icons">
                                             calendar_today
                                         </i></div>
@@ -76,9 +77,9 @@
                                 <label class="col-form-label">일정 종료 시간</label>
                                 <div class="input-group date" id="datetimepicker4" data-target-input="nearest">
                                     <input type="text" class="form-control datetimepicker-input"
-                                           data-target="#datetimepicker4" v-model="endTime"/>
+                                           data-target="#datetimepicker4" v-model="endTime" :disabled="true"/>
                                     <div class="input-group-append" data-target="# datetimepicker4"
-                                         data-toggle="datetimepicker">
+                                         data-toggle="datetimepicker" v-popover:timePicker.left @click="setTimeEndTarget()">
                                         <div class="input-group-text"><i class="material-icons">
                                             access_time
                                         </i></div>
@@ -101,6 +102,16 @@
                 <button @click="send()">일정 만들기</button>
                 <button @click="cancel()">취소</button>
             </div>
+            <popover name="picker">
+              <div>
+                <datepicker :inline="true" @selected="setDate" :disabledDates="disabledDates"></datepicker>
+              </div>
+            </popover>
+            <popover :pointer="false" name="timePicker">
+              <div>
+                <vue-timepicker @change="changeHandler"></vue-timepicker>
+              </div>
+            </popover>
         </div>
     </div>
 </div>
@@ -111,7 +122,11 @@
 </template>
 
 <script>
-import axios from 'axios'
+import moment from 'moment';
+import axios from 'axios';
+import Datepicker from 'vuejs-datepicker';
+import VueTimepicker from 'vue2-timepicker';
+import router from '../router';
 
 export default {
   name: 'RegisterForm',
@@ -121,16 +136,28 @@ export default {
       default: true
     }
   },
+  components: {
+    Datepicker,
+    VueTimepicker
+  },
   data() {
     return {
+      // for element
       show: false,
       title: '',
       description: '',
+      repetitionPeriod: 0,
+      // for date picker
+      pickerTarget: '',
       startDay: '',
       endDay: '',
+      disabledDates: {
+        to: new Date(Date.now() - 8640000)
+      },
+      // for time picker
+      timePickerTarget: '',
       startTime: '',
-      endTime: '',
-      repetitionPeriod: 0
+      endTime: ''
     }
   },
   methods: {
@@ -144,6 +171,7 @@ export default {
       })
       .then(function (response) {
         console.log(response);
+        router.go();
       })
       .catch(function (error) {
         console.log(error);
@@ -161,11 +189,73 @@ export default {
     },
     hide: function() {
       this.show = false
+    },
+    close: function() {
+      this.cancel()
+      this.hide()
+    },
+    // date picker
+    setStart: function() {
+      this.pickerTarget = "startDate";
+      this.disabledDates.to = new Date(Date.now() - 8640000);
+    },
+    setEnd: function() {
+      this.pickerTarget = "endDate"
+    },
+    setDate(value) {
+      if(this.pickerTarget == "startDate") {
+        this.startDay = moment(value).format('YYYYMMDD')
+      } else {
+        this.endDay = moment(value).format('YYYYMMDD')
+      }
+    },
+    // time picker
+    setTimeStartTarget: function() {
+      this.timePickerTarget = "startTime";
+    },
+    setTimeEndTarget: function() {
+      this.timePickerTarget = "endTime";
+    },
+    changeHandler(eventData) {
+      var eventTime = eventData.data['HH'] + eventData.data['mm']
+      if(this.timePickerTarget == "startTime") {
+        this.startTime = eventTime
+      } else {
+        this.endTime = eventTime
+      }
     }
   },
   watch: {
     checker: function() {
       this.show = true
+    },
+    startDay: function() {
+      // validation startday < endday
+      var startMoment = moment(this.startDay, "YYYYMMDD")
+      var endMoment = moment(this.endDay, "YYYYMMDD")
+      if(endMoment.isAfter(startMoment)) {
+        this.endDay = ''
+      }
+
+      // limit endday
+      var startMoment = moment(this.startDay, 'YYYYMMDD');
+      console.log(startMoment)
+      this.disabledDates.to = new Date(parseInt(startMoment.format('YYYY'))
+      , parseInt(startMoment.format('M') - 1)
+      , parseInt(startMoment.format('D')));
+      console.log(this.disabledDates.to)
+    },
+    endTime: function() {
+      if(this.startDay != '' && 
+      this.endDay != '' && 
+      this.startTime != '' &&
+      this.startDay == this.endDay) {
+        var startMoment = moment(this.startDay + this.startTime, "YYYYMMDDHHmm")
+        var endMoment = moment(this.endDay + this.endTime, "YYYYMMDDHHmm")
+        if(startMoment.isAfter(endMoment)) {
+          this.endTime = ''
+        } 
+      }
     }
   }
 }
@@ -188,4 +278,15 @@ export default {
   display: table-cell;
   vertical-align: middle;
 }
+
+div[data-popover="picker"] {
+  width: 500px;
+  padding-right: 305px;
+}
+
+div[data-popover="timePicker"] {
+  padding-bottom: 170px;
+  padding-right: -5px;
+}
+
 </style>
