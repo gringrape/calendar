@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class ItineraryService {
 
     }
 
-    public List<ItineraryDto> getItineraries(String startDate, String endDate) {
+    public List<ItineraryDto> getItineraries(String startDate, String endDate) throws DateTimeParseException {
 
         LocalDateTime parsedStartDate =
                 parseForFiltering(startDate);
@@ -86,15 +87,15 @@ public class ItineraryService {
 
     public Itinerary getItinerary(Long itineraryId) {
 
-        // TODO: 지정된 아이디의 일정이 없는 경우에 예외를 반환하도록 처리
         Itinerary itinerary = itineraryRepository.findById(itineraryId)
-                .orElse(null);
+                .orElseThrow(() ->
+                        new ItineraryNotFoundException(itineraryId));
 
         return itinerary;
 
     }
 
-    public Itinerary addItinerary(ItineraryDto resource) throws ParseException {
+    public Itinerary addItinerary(ItineraryDto resource) throws DateTimeParseException, UnknownValueForPeriodException {
 
         Itinerary parsed = parseForSaving(resource);
 
@@ -104,9 +105,8 @@ public class ItineraryService {
 
     }
 
-    private Itinerary parseForSaving(ItineraryDto resource) throws ParseException {
-        //TODO: parse Exception 에 대한 처리를 추가
-        //TODO: parsing 이 올바르게 진행되었는지 확인하는 테스트를 추가
+    private Itinerary parseForSaving(ItineraryDto resource) throws DateTimeParseException, UnknownValueForPeriodException {
+
         String pattern = "yyyyMMddHHmm";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
 
@@ -114,12 +114,6 @@ public class ItineraryService {
                 LocalDateTime.parse(resource.getStartDate(), formatter);
         LocalDateTime parsedEndDate =
                 LocalDateTime.parse(resource.getEndDate(), formatter);
-
-//        // Time Zone adjustment
-//        parsedStartDate = parsedStartDate.plusHours(9);
-//        parsedEndDate = parsedEndDate.plusHours(9);
-
-        // TODO: 일정의 종류 계산. 반복 설정 읽어오기
 
         Sort thisSort = setSort(parsedStartDate, parsedEndDate);
 
@@ -136,7 +130,7 @@ public class ItineraryService {
                 .build();
     }
 
-    private LocalDateTime parseForFiltering(String date) {
+    private LocalDateTime parseForFiltering(String date) throws DateTimeParseException {
         // TODO: parsing이 올바르게 진행되었는지 확인하는 테스트를 추가.
 
         String pattern = "yyyyMMddHHmm";
@@ -148,7 +142,7 @@ public class ItineraryService {
         return parsed;
     }
 
-    private Sort setSort(LocalDateTime parsedStartDate, LocalDateTime parsedEndDate) {
+    private Sort setSort(LocalDateTime parsedStartDate, LocalDateTime parsedEndDate) throws AssertionError {
 
         String checkPattern = "yyyyMMdd";
         DateTimeFormatter checkFormatter =

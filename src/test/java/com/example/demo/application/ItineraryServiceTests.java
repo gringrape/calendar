@@ -150,10 +150,7 @@ public class ItineraryServiceTests {
     }
 
     @Test
-    public void addItinerary() throws ParseException {
-        // TODO: parse exception 처리 방법 고민
-        // TODO: parsing 이 제대로 되었는지 확인 - 날짜
-        // TODO: method가 너무 길어졌으므로 의미에 따라 분리
+    public void addItinerary() throws UnknownValueForPeriodException {
 
         ItineraryDto resource = ItineraryDto.builder()
                 .id(1004L)

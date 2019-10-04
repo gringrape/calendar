@@ -2,6 +2,7 @@ package com.example.demo.interfaces;
 
 import com.example.demo.application.ItineraryService;
 import com.example.demo.domain.Itinerary;
+import com.example.demo.domain.ItineraryNotFoundException;
 import com.example.demo.domain.Period;
 import com.example.demo.domain.Sort;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,8 +42,6 @@ public class ItineraryControllerTests {
 
     @Test
     public void create() throws Exception {
-
-
 
         Itinerary mockItinerary = Itinerary.builder()
                                 .id(1004L)
@@ -72,7 +72,7 @@ public class ItineraryControllerTests {
     }
 
     @Test
-    public void detail() throws Exception {
+    public void detailWithValidId() throws Exception {
 
         Itinerary mockItinerary = Itinerary.builder()
                 .id(1004L)
@@ -97,15 +97,47 @@ public class ItineraryControllerTests {
     }
 
     @Test
-    public void listFiltered() throws Exception {
+    public void detailWithInvalidId() throws Exception {
 
-        String startDate = "20191029";
-        String endDate = "20191102";
+        given(itineraryService.getItinerary(eq(404L)))
+                .willThrow(new ItineraryNotFoundException(404L));
 
-        mvc.perform(get("/itineraries?startDate=20191029&endDate=20191102"))
+        mvc.perform(get("/itineraries/404"))
+                .andExpect(status().isNotFound());
+
+        verify(itineraryService).getItinerary(eq(404L));
+
+    }
+
+    @Test
+    public void listFilteredWithValid() throws Exception {
+
+        String startDate = "201910290000";
+        String endDate = "201911020000";
+
+        mvc.perform(get("/itineraries?startDate=201910290000&endDate=201911020000"))
                 .andExpect(status().isOk());
 
         verify(itineraryService).getItineraries(eq(startDate), eq(endDate));
+
+    }
+
+    @Test
+    public void listFilteredWithEmpty() throws Exception {
+
+        mvc.perform(get("/itineraries"))
+                .andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    public void listFilteredWithInvalidDate() throws Exception {
+
+        given(itineraryService.getItineraries(any(), any()))
+                .willThrow(new DateTimeParseException("sdf", new StringBuffer("spring"), 1));
+
+        mvc.perform(get("/itineraries?startDate=\"1103\"&endDate=\"1111\""))
+                .andExpect(status().isBadRequest());
 
     }
 }

@@ -14,13 +14,13 @@ public enum Period {
         return value;
     }
 
-    public static Period valueOf(Integer value) {
+    public static Period valueOf(Integer value) throws UnknownValueForPeriodException {
         switch(value) {
             case 0: return NOT;
             case 1: return DAILY;
             case 2: return WEEKLY;
             case 3: return MONTHLY;
-            default: throw new AssertionError("Unknown value for Repetition Period: " + value);
+            default: throw new UnknownValueForPeriodException("Unknown value for Repetition Period: " + value);
         }
     }
 

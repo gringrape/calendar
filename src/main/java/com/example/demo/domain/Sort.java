@@ -14,12 +14,12 @@ public enum Sort {
         return value;
     }
 
-    public static Sort valueOf(Integer value) {
+    public static Sort valueOf(Integer value) throws UnknownValueForSortException {
         switch(value) {
             case 1: return ORDINARY;
             case 2: return CONTINUOUS;
             case 3: return REPETITIVE;
-            default: throw new AssertionError("Unknown value for itinerary sort: " + value);
+            default: throw new UnknownValueForSortException("Unknown value for itinerary sort: " + value);
         }
     }
 }

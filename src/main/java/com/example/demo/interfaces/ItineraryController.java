@@ -1,14 +1,12 @@
 package com.example.demo.interfaces;
 
 import com.example.demo.application.ItineraryService;
-import com.example.demo.domain.Itinerary;
-import com.example.demo.domain.ItineraryDto;
-import com.example.demo.domain.Period;
-import com.example.demo.domain.Sort;
+import com.example.demo.domain.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -29,10 +27,14 @@ public class ItineraryController {
             @RequestParam Optional<String> startDate,
             @RequestParam Optional<String> endDate
     ) {
-
         List<ItineraryDto> itineraryDtos;
 
-        itineraryDtos = itineraryService.getItineraries(startDate.get(), endDate.get());
+        itineraryDtos = itineraryService
+                .getItineraries(
+                        startDate.orElseThrow(() ->
+                                new SearchWithEmptyDateExcecption("시작일")),
+                        endDate.orElseThrow(() ->
+                                new SearchWithEmptyDateExcecption("종료일")));
 
         return itineraryDtos;
     }
@@ -51,9 +53,9 @@ public class ItineraryController {
 
     @PostMapping("/itineraries")
     public ResponseEntity<?> create(
-            @RequestBody ItineraryDto resource
-    ) throws URISyntaxException, ParseException {
-        //TODO: Parse Exception 처리 데이터 형식을 잘못 보낸것이므로 badRequest 처리
+            @RequestBody @Valid ItineraryDto resource
+    ) throws URISyntaxException, UnknownValueForPeriodException {
+
         Itinerary itinerary = itineraryService.addItinerary(resource);
 
         String url = "/itineraries/" + itinerary.getId();
