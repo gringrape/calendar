@@ -145,9 +145,6 @@ public class ItineraryService {
         LocalDateTime parsed =
                 LocalDateTime.parse(date, formatter);
 
-//        // timezone adjust
-//        parsedDate.plusHours(9);
-
         return parsed;
     }
 

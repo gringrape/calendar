@@ -70,11 +70,29 @@ public class ItineraryServiceTests {
         List<Itinerary> mockFromType3Search = new ArrayList<>();
 
         mockFromType1Search.add(
-                Itinerary.builder().id(1004L).build());
+                Itinerary.builder()
+                        .startDate(LocalDateTime.now())
+                        .endDate(LocalDateTime.now())
+                        .id(1004L)
+                        .sort(Sort.ORDINARY)
+                        .repetitionPeriod(Period.NOT)
+                        .build());
         mockFromType2Search.add(
-                Itinerary.builder().id(1005L).build());
+                Itinerary.builder()
+                        .startDate(LocalDateTime.now())
+                        .endDate(LocalDateTime.now())
+                        .id(1005L)
+                        .sort(Sort.ORDINARY)
+                        .repetitionPeriod(Period.NOT)
+                        .build());
         mockFromType3Search.add(
-                Itinerary.builder().id(1006L).build());
+                Itinerary.builder()
+                        .startDate(LocalDateTime.now())
+                        .endDate(LocalDateTime.now())
+                        .id(1006L)
+                        .sort(Sort.ORDINARY)
+                        .repetitionPeriod(Period.NOT)
+                        .build());
 
         given(itineraryRepository
                         .findAllByStartDateGreaterThanEqualAndEndDateLessThanEqual(
@@ -97,8 +115,8 @@ public class ItineraryServiceTests {
                 ))
                 .willReturn(mockFromType3Search);
 
-        String startDate = "20190929";
-        String endDate = "20191102";
+        String startDate = "201909290000";
+        String endDate = "201911022359";
 
         List<ItineraryDto> itineraries =
                 itineraryService.getItineraries(startDate, endDate);
