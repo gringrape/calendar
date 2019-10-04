@@ -120,6 +120,11 @@ public class ItineraryServiceTests {
                         any(),
                         any()
                 );
+        verify(itineraryRepository)
+                .findAllByStartDateLessThanAndEndDateGreaterThan(
+                        any(),
+                        any()
+                );
 
         assertThat(itineraries.get(0).getId(), is(1004L));
         assertThat(itineraries.get(1).getId(), is(1005L));

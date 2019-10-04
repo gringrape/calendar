@@ -59,6 +59,12 @@ public class ItineraryService {
                                 parsedStartDate,
                                 parsedEndDate
                         ));
+        container.add(
+                itineraryRepository
+                        .findAllByStartDateLessThanAndEndDateGreaterThan(
+                                parsedStartDate,
+                                parsedEndDate
+                        ));
 
         List<Itinerary> itineraries = new ArrayList<>();
 
@@ -133,19 +139,16 @@ public class ItineraryService {
     private LocalDateTime parseForFiltering(String date) {
         // TODO: parsing이 올바르게 진행되었는지 확인하는 테스트를 추가.
 
-        String pattern = "yyyyMMdd";
+        String pattern = "yyyyMMddHHmm";
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
 
-        LocalDate parsed =
-                LocalDate.parse(date, formatter);
-
-        LocalDateTime parsedDate =
-                parsed.atTime(0,0);
+        LocalDateTime parsed =
+                LocalDateTime.parse(date, formatter);
 
 //        // timezone adjust
 //        parsedDate.plusHours(9);
 
-        return parsedDate;
+        return parsed;
     }
 
     private Sort setSort(LocalDateTime parsedStartDate, LocalDateTime parsedEndDate) {

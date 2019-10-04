@@ -15,7 +15,8 @@ public interface ItineraryRepository extends CrudRepository<Itinerary, Long> {
     Optional<Itinerary> findById(Long itineraryId);
 
     List<Itinerary> findAllByStartDateGreaterThanEqualAndEndDateLessThanEqual(
-            LocalDateTime startOfCalendar, LocalDateTime endOfCalendar
+            LocalDateTime startOfCalendar
+            , LocalDateTime endOfCalendar
     );
 
     List<Itinerary> findAllByStartDateLessThanAndEndDateBetween(
@@ -28,5 +29,10 @@ public interface ItineraryRepository extends CrudRepository<Itinerary, Long> {
             LocalDateTime endOfCalendar1,
             LocalDateTime startOfCalendar,
             LocalDateTime endOfCalendar2
+    );
+
+    List<Itinerary> findAllByStartDateLessThanAndEndDateGreaterThan(
+            LocalDateTime startOfCalendar,
+            LocalDateTime endOfCalendar
     );
 }

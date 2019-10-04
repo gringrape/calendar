@@ -19,10 +19,12 @@
                     <div class="form-group">
                         <label class="col-form-label">일정 제목</label>
                         <input type="text" class="form-control" id="recipient-name" v-model="title">
+                        <h5 v-if="!checkers.title" class="checkMessage">제목을 입력해주세요</h5>
                     </div>
                     <div class="form-group">
                         <label for="message-text" class="col-form-label">일정 설명</label>
                         <textarea class="form-control" id="message-text" v-model="description"></textarea>
+                        <h5 v-if="!checkers.description" class="checkMessage">설명을 입력해주세요</h5>
                     </div>
                     <div class="form-row">
                         <div class="col-md-6">
@@ -38,6 +40,7 @@
                                         </i></div>
                                     </div>
                                 </div>
+                                <h5 v-if="!checkers.startDay" class="checkMessage">시작일을 입력해주세요</h5>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -53,6 +56,7 @@
                                         </i></div>
                                     </div>
                                 </div>
+                                <h5 v-if="!checkers.startTime" class="checkMessage">시작시간을 입력해주세요</h5>
                             </div>
                         </div>
                     </div>
@@ -70,6 +74,7 @@
                                         </i></div>
                                     </div>
                                 </div>
+                                <h5 v-if="!checkers.endDay" class="checkMessage">종료일을 입력해주세요</h5>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -85,6 +90,7 @@
                                         </i></div>
                                     </div>
                                 </div>
+                            <h5 v-if="!checkers.endDay" class="checkMessage">종료시간을 입력해주세요</h5>
                             </div>
                         </div>
                         <div class="form-check form-check-inline">
@@ -92,8 +98,8 @@
                             <label class="form-check-label" for="inlineCheckbox1">매월 반복</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="inlineCheckbox2" value="option2">
-                            <label class="form-check-label" for="inlineCheckbox2">하루 종일</label>
+                            <input class="form-check-input" type="checkbox" id="inlineCheckbox2" v-model="alldayChecked">
+                            <label class="form-check-label" for="inlineCheckbox2">하루 종일 </label>
                         </div>
                     </div>
                 </form>
@@ -134,7 +140,8 @@ export default {
     checker: {
       type: Boolean,
       default: true
-    }
+    },
+    pickedStartDate: String
   },
   components: {
     Datepicker,
@@ -147,6 +154,7 @@ export default {
       title: '',
       description: '',
       repetitionPeriod: 0,
+      msg: {},
       // for date picker
       pickerTarget: '',
       startDay: '',
@@ -157,11 +165,19 @@ export default {
       // for time picker
       timePickerTarget: '',
       startTime: '',
-      endTime: ''
+      endTime: '',
+      // checking
+      alldayChecked: false
     }
   },
   methods: {
     send: function() {
+      for(var key in this.checkers) {
+        if(this.checkers[key] == false) {
+          return
+        }
+      }
+
       axios.post('/itineraries', {
         title: this.title,
         description: this.description,
@@ -256,12 +272,74 @@ export default {
           this.endTime = ''
         } 
       }
+    },
+    alldayChecked: function() {
+      if(this.alldayChecked) {
+        this.startTime = '0000'
+        this.endTime = '2359'
+      } else {
+        this.startTime = ''
+        this.endTime = ''
+      }
+    },
+    pickedStartDate: function() {
+      var pickedMoment = moment(this.pickedStartDate, "YYYYMMDD")
+      if (moment().startOf('day')
+            .isAfter(pickedMoment.startOf('day'))) {
+              this.startDay = moment().format('YYYYMMDD')
+            } else {
+              this.startDay = this.pickedStartDate
+            }
+      
+    }
+  },
+  computed: {
+    checkers: function() {
+      var result = {}
+      if(this.title == '') {
+        result.title = false
+      } else {
+        result.title = true
+      }
+      if(this.description == '') {
+        result.description = false
+      } else {
+        result.description = true
+      }
+      if(this.startDay == '') {
+        result.startDay = false
+      } else {
+        result.startDay = true
+      }
+      if(this.startTime == '') {
+        result.startTime = false
+      } else {
+        result.startTime = true
+      }
+      if(this.endDay == '') {
+        result.endDay = false
+      } else {
+        result.endDay = true
+      }
+      if(this.endTime == '') {
+        result.endTime = false
+      } else {
+        result.endTime = true
+      }
+      return result
     }
   }
 }
 </script>
 
 <style>
+.checkMessage {
+  margin-top: 5px;
+  font-size: 10px;
+  color: red;
+  font-weight: 400;
+}
+
 .modal-mask {
   position: fixed;
   z-index: 9998;

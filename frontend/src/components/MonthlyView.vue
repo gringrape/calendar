@@ -1,51 +1,40 @@
 <template>
-  <div class="tab-content">
-    <RegisterForm :checker="switcher" @registered="$emit('registered')">
-    </RegisterForm>
-    <div class="tab-pane active show" id="month" role="tabpanel" aria-labelledby="tab-month">
-      <div class="monthly-calendar">
-        <div class="week-day">
-          <div class="day-name" v-for="name in dayName" :key="name.toString()">{{ name }}</div>
-        </div>
-        <div class="week" v-for="week in weeks" :key="week.toString()" @click="switching()">
-          <div class="day" v-for="date in week" :key="date.day.toString()" ref="days">
-            <h3 v-show="false">{{ date["month"] }}</h3>
-            <h3 class="day-label">{{ date["day"] }}</h3>
-          </div>
-        </div>
+  <div class="tab-pane active show" id="month" role="tabpanel" aria-labelledby="tab-month">
+    <div class="monthly-calendar">
+      <div class="week-day">
+        <div class="day-name" v-for="name in dayName" :key="name.toString()">{{ name }}</div>
+      </div>
+      <div class="week" v-for="week in weeks">
+        <div class="day" v-for="date in week" ref="days">
+          <h3 v-show="false">{{ date["month"] }}</h3>
+          <h3 class="day-label" @click="switching(date)">{{ date["day"] }}</h3>     
+        </div>    
       </div>
     </div>
-   <!-- <button @click="getList()">
-      일정 불러오기 연습
-    </button>
-    <button @click="drawItineraries()">
-      일정 그리기 연습
-    </button>
-    <h1>{{ itineraries }}</h1>
-    <h1>{{ sep }}</h1>
-    <h5 v-for="ele in itineraries">{{ ele }}</h5>
-    <h5 v-for="el in sep" >{{ el }}</h5> -->
-    
-    <popover name="pop">
-      <div class="content-line">
-        <div v-bind:class="markingClassName">
+      <RegisterForm :checker="switcher"
+                    :pickedStartDate="pickedStartDate" 
+                    @registered="$emit('registered')">
+      </RegisterForm>
+      <popover name="pop">
+        <div class="content-line">
+          <div v-bind:class="markingClassName">
+          </div>
+          <div class="title">
+            <h5 id="title">{{ itinerary["title"] }}</h5>
+            <h5 class="reservation">
+              {{ formatter(itinerary["startDate"]) }} ~ <br>
+              {{ formatter(itinerary["endDate"]) }}
+            </h5>
+          </div>
+        </div>
+        <div class="content-line">
+          <i class="material-icons">notes</i>
         </div>
         <div class="title">
-          <h5 id="title">{{ itinerary["title"] }}</h5>
-          <h5 class="reservation">
-            {{ formatter(itinerary["startDate"]) }} ~ <br>
-            {{ formatter(itinerary["endDate"]) }}
-          </h5>
+          <h5 class="description" id="description">{{ itinerary["description"] }}</h5>
         </div>
-      </div>
-      <div class="content-line">
-        <i class="material-icons">notes</i>
-      </div>
-      <div class="title">
-        <h5 class="description" id="description">{{ itinerary["description"] }}</h5>
-      </div>
-    </popover>
-  </div>    
+      </popover>
+  </div> 
 </template>
 
 <script>
@@ -68,7 +57,10 @@ export default {
   },
   data() {
     return {
+      // for register form
       switcher: false,
+      pickedStartDate: '',
+      // for calendar
       dayName: ['일', '월', '화', '수', '목', '금', '토'],
       weeks: [],
       itineraries: [],
@@ -195,16 +187,20 @@ export default {
 
     },
     getList: function() {
-      var startMoment = this.calStart()
-      var endMoment = this.calEnd()
+      var startMoment = this.calStart().startOf('day')
+      var endMoment = this.calEnd().endOf('day')
 
       var startDate = startMoment.format('YYYY') +
                       startMoment.format('MM') +
-                      startMoment.format('DD')
+                      startMoment.format('DD') +
+                      startMoment.format('HH') +
+                      startMoment.format('mm')
 
       var endDate = endMoment.format('YYYY') +
                       endMoment.format('MM') +
-                      endMoment.format('DD')
+                      endMoment.format('DD') +
+                      endMoment.format('HH') +
+                      endMoment.format('mm')
 
       axios.get('http://localhost:5000/itineraries?startDate=' + startDate + '&endDate=' + endDate)
       .then(response => this.itineraries = response.data)
@@ -233,7 +229,7 @@ export default {
         var end = moment(itinerary["endDate"], "YYYYMMDDHHmm")
 
         // 이전 월에 걸친 일정 - o.k.
-        if(this.calStart().isAfter(start)) {
+        if(this.calStart().startOf('day').isAfter(start)) {
           var newStart = this.calStart()
           itinerary["startDate"] = newStart.format('YYYY') +
                                  newStart.format('MM') +
@@ -245,19 +241,19 @@ export default {
         }
 
         // 다음 월에 걸친 일정 - o.k.
-        if(end.isAfter(this.calEnd())) {
-          var newEnd = this.calEnd()
+        if(end.isAfter(this.calEnd().endOf('day'))) {
+          var newEnd = this.calEnd().subtract(50, 'seconds')
           itinerary["endDate"] = newEnd.format('YYYY') +
                                  newEnd.format('MM') +
                                  newEnd.format('DD') +
                                  newEnd.format("HH") +
                                  newEnd.format("mm")
-          separatedItineraries.push(itinerary)
+          this.separate(separatedItineraries, itinerary)
           return
         } 
         
         // 한주 단위를 넘는 일정 -> deep copy 가 핵심......!!!
-        if(end.isAfter(start.day(6))) {          
+        if(end.isAfter(start.day(6).endOf('day'))) {          
           var leftover = JSON.parse(JSON.stringify(itinerary)); // deep copy
           var newEnd = start.day(6)
           itinerary["endDate"] = newEnd.format('YYYY') +
@@ -275,16 +271,26 @@ export default {
                                  newStart.format("mm")
 
           this.separate(separatedItineraries, leftover)
+          return
         } else {
           separatedItineraries.push(itinerary)
         }
     },
-    switching: function() {
+    switching: function(date) {
       if(this.switcher == true) {
         this.switcher = false
       } else {
         this.switcher = true
       }
+      var month = date['month']
+      var day = date['day']
+      if(month.length == 1) {
+        month = '0' + month
+      }
+      if(day.length == 1) {
+        day = '0' + day
+      }
+      this.pickedStartDate = this.yearCal + month + day
     },
     getItinerary: function() {
        axios.get('http://localhost:5000/itineraries/' + this.itineraryId)
